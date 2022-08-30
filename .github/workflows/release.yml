@@ -1,0 +1,35 @@
+name: create_release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  create-release:
+    name: create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout sources
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: get version
+        id: get_version
+        run: echo ::set-output name=version::${GITHUB_REF_NAME}
+
+      - name: install cocogitto
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cocogitto
+          version: 5.1.0
+
+      - name: generate changelog
+        run: cog changelog --template full_hash --at ${{ steps.get_version.outputs.version }} > ${{ github.workflow }}_changelog.md
+
+      - name: generate release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: ${{ github.workflow }}_changelog.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
