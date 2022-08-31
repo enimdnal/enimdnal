@@ -128,11 +128,11 @@ impl Board {
         self.tiles[index]
     }
 
-    pub fn left_click(&mut self, x: usize, y: usize) {
+    pub fn handle_uncover(&mut self, x: usize, y: usize) {
         todo!()
     }
 
-    pub fn right_click(&mut self, x: usize, y: usize) {
+    pub fn handle_mark(&mut self, x: usize, y: usize) {
         todo!()
     }
 
