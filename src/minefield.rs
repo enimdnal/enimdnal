@@ -22,7 +22,12 @@ pub struct Difficulty {
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Mark {
+    /// Mine flag, indicates 100% player certainty of a mine,
+    /// and disables uncovering the marked field, for safety.
     Flag,
+
+    /// "Danger, probably" marker, for fields that are sorta suspicious,
+    /// but not yet worthy of The [Mark::Flag].
     Unsure,
     None,
 }
@@ -128,14 +133,35 @@ impl Board {
         self.tiles[index]
     }
 
+    /// Primary interface for acting on a minefield.
+    ///
+    /// Corresponds to the action of uncovering a covered tile and either:
+    ///
+    /// - uncovering a hint
+    /// - uncovering a blank, which triggers a flood-uncover
+    /// - uncovering a mine, resulting in a game-over
+    ///
+    /// Uncovering every non-mine tile is the win condition.
+    /// Note that the mine tiles are **not** required to be flagged (looking at you, speedrunners).
     pub fn handle_uncover(&mut self, x: usize, y: usize) {
         todo!()
     }
 
+    /// Primary interface for acting on a minefield.
+    ///
+    /// Corresponds to the action of cycling through
+    /// available covered-field marks (the [Mark] type).
     pub fn handle_mark(&mut self, x: usize, y: usize) {
         todo!()
     }
 
+    /// A flood-fill-style uncovering procedure,
+    /// where the uncovering "spills" over a surrounding area
+    /// bounded by hint tiles (inclusive).
+    ///
+    /// Algorithmically, this is equivalent to a DFS/BFS traversal
+    /// starting from a player-uncovered tile
+    /// and stopping on already uncovered tiles and hint tiles.
     fn flood_uncover(&mut self, x: usize, y: usize) {
         todo!()
     }
