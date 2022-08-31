@@ -17,7 +17,8 @@ post_bump_hooks = [
 [changelog]
 path = "CHANGELOG.md"
 authors = [
-    { signature = "Marcin Puc", username = "tranzystorek-io" }
+    { signature = "Marcin Puc", username = "tranzystorek-io" },
+    { signature = "Bartosz Dec", username = "Qsionc" },
 ]
 
 [bump_profiles]
