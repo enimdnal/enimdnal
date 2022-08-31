@@ -1,7 +1,20 @@
 name: "ci"
-on: pull_request
+on:
+  pull_request:
+    branches: [trunk]
 
 jobs:
+  check-coco:
+    name: check conventional commit compliance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: cocogitto/cocogitto-action@v3
+
   format:
     name: cargo fmt
     runs-on: ubuntu-latest
