@@ -56,6 +56,8 @@ pub struct Board {
     tiles: Vec<Tile>,
     width: usize,
     height: usize,
+    mines: usize,
+    placed: bool,
 }
 
 impl Mark {
@@ -98,8 +100,10 @@ impl Board {
         let size = width * height;
         Self {
             tiles: vec![Tile::new(); size],
+            placed: false,
             width,
             height,
+            mines,
         }
     }
 
@@ -169,12 +173,16 @@ impl Board {
     fn coords_to_index(&self, x: usize, y: usize) -> usize {
         y * self.width + x
     }
-}
 
-fn place_mines(tiles: &mut [Tile]) {
-    todo!()
-}
+    /// Place mines on the field.
+    ///
+    /// The `skip` argument contains board indices
+    /// that shall not have a mine placed in.
+    fn place_mines(&mut self, skip: &[usize]) {
+        todo!()
+    }
 
-fn place_hints(tiles: &mut [Tile]) {
-    todo!()
+    fn place_hints(&mut self) {
+        todo!()
+    }
 }
