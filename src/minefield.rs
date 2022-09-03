@@ -125,6 +125,14 @@ impl Board {
         self.tiles[index]
     }
 
+    pub fn is_victory(&self) -> bool {
+        todo!()
+    }
+
+    pub fn is_defeat(&self) -> bool {
+        todo!()
+    }
+
     /// Primary interface for acting on a minefield.
     ///
     /// Corresponds to the action of uncovering a covered tile and either:
