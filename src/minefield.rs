@@ -1,23 +1,24 @@
-const EASY: Difficulty = Difficulty {
+pub const BEGINNER: Params = Params {
     width: 8,
     height: 8,
     mines: 10,
 };
-const MEDIUM: Difficulty = Difficulty {
+pub const INTERMEDIATE: Params = Params {
     width: 16,
     height: 16,
     mines: 40,
 };
-const HARD: Difficulty = Difficulty {
+pub const EXPERT: Params = Params {
     width: 30,
     height: 16,
     mines: 99,
 };
 
-pub struct Difficulty {
-    width: usize,
-    height: usize,
-    mines: usize,
+#[derive(Debug, Clone, Copy)]
+pub struct Params {
+    pub width: usize,
+    pub height: usize,
+    pub mines: usize,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -54,9 +55,7 @@ pub struct Tile {
 #[derive(Debug)]
 pub struct Board {
     tiles: Vec<Tile>,
-    width: usize,
-    height: usize,
-    mines: usize,
+    params: Params,
     placed: bool,
 }
 
@@ -96,40 +95,29 @@ impl Tile {
 }
 
 impl Board {
-    fn new(width: usize, height: usize, mines: usize) -> Self {
-        let size = width * height;
+    pub fn new(params: Params) -> Self {
+        let size = params.width * params.height;
         Self {
             tiles: vec![Tile::new(); size],
             placed: false,
-            width,
-            height,
-            mines,
+            params,
         }
     }
 
-    pub fn from_difficulty(difficulty: Difficulty) -> Self {
-        let Difficulty {
-            width,
-            height,
-            mines,
-        } = difficulty;
-        Self::new(width, height, mines)
+    pub fn beginner() -> Self {
+        Self::new(BEGINNER)
     }
 
-    pub fn easy() -> Self {
-        Self::from_difficulty(EASY)
+    pub fn intermediate() -> Self {
+        Self::new(INTERMEDIATE)
     }
 
-    pub fn medium() -> Self {
-        Self::from_difficulty(MEDIUM)
-    }
-
-    pub fn hard() -> Self {
-        Self::from_difficulty(HARD)
+    pub fn expert() -> Self {
+        Self::new(EXPERT)
     }
 
     pub fn dims(&self) -> (usize, usize) {
-        (self.width, self.height)
+        (self.params.width, self.params.height)
     }
 
     pub fn tile(&self, x: usize, y: usize) -> Tile {
@@ -171,7 +159,7 @@ impl Board {
     }
 
     fn coords_to_index(&self, x: usize, y: usize) -> usize {
-        y * self.width + x
+        y * self.params.width + x
     }
 
     /// Place mines on the field.
