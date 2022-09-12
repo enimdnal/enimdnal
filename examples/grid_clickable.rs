@@ -98,8 +98,8 @@ fn draw_tile(draw: &mut Draw, x: usize, y: usize, hover: bool, clicked: bool) {
 }
 
 fn mouse_pos_to_index(x: f32, y: f32) -> Option<usize> {
-    let in_x_bounds = x >= 0. && x <= BOARD_WIDTH;
-    let in_y_bounds = y >= 0. && y <= BOARD_HEIGHT;
+    let in_x_bounds = x > 0. && x < BOARD_WIDTH;
+    let in_y_bounds = y > 0. && y < BOARD_HEIGHT;
 
     if !in_x_bounds || !in_y_bounds {
         return None;
