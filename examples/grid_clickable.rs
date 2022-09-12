@@ -105,8 +105,8 @@ fn mouse_pos_to_index(x: f32, y: f32) -> Option<usize> {
         return None;
     }
 
-    let tile_x = (x / TILE_SIZE).floor() as usize;
-    let tile_y = (y / TILE_SIZE).floor() as usize;
+    let tile_x = f32::floor(x / TILE_SIZE) as usize;
+    let tile_y = f32::floor(y / TILE_SIZE) as usize;
 
     Some(tile_y * COLS + tile_x)
 }
