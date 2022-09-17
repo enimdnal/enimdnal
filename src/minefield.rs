@@ -289,7 +289,7 @@ impl Board {
                 }
                 let mine_count = self
                     .neighbors(x, y)
-                    .filter(|(xx, yy)| self.tiles[self.coords_to_index(*xx, *yy)].is_mine())
+                    .filter(|&(xx, yy)| self.tiles[self.coords_to_index(xx, yy)].is_mine())
                     .count();
                 if mine_count > 0 {
                     self.tiles[idx].object = Object::Hint(mine_count as _);
