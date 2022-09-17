@@ -161,7 +161,7 @@ impl Board {
         if !self.placed {
             self.placed = true;
             let mut skip = self
-                .neighbours(x, y)
+                .neighbors(x, y)
                 .map(|(xx, yy)| self.coords_to_index(xx, yy))
                 .collect::<Vec<_>>();
             skip.push(tile_idx);
@@ -195,7 +195,7 @@ impl Board {
         }
     }
 
-    fn neighbours(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
+    fn neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
         let offsets = [
             (-1, -1),
             (-1, 0),
@@ -246,7 +246,7 @@ impl Board {
                 }
 
                 if !self.tiles[t_idx].is_hint() {
-                    for (xx, yy) in self.neighbours(tile.0, tile.1) {
+                    for (xx, yy) in self.neighbors(tile.0, tile.1) {
                         if self.tiles[self.coords_to_index(xx, yy)].is_uncoverable() {
                             tile_pos.push_back((xx, yy));
                         }
@@ -284,7 +284,7 @@ impl Board {
                     continue;
                 }
                 let mine_count = self
-                    .neighbours(x, y)
+                    .neighbors(x, y)
                     .filter(|(xx, yy)| self.tiles[self.coords_to_index(*xx, *yy)].is_mine())
                     .count();
                 if mine_count > 0 {
