@@ -1,5 +1,5 @@
+use notan::math::rand;
 use notan::math::rand::seq::IteratorRandom;
-use notan::math::rand::*;
 use std::collections::{HashSet, VecDeque};
 
 pub const BEGINNER: Params = Params {
@@ -266,7 +266,7 @@ impl Board {
     /// The `skip` argument contains board indices
     /// that shall not have a mine placed in.
     fn place_mines(&mut self, skip: &[usize]) {
-        let mut rng = thread_rng();
+        let mut rng = rand::thread_rng();
         let mines = (0..self.tiles.len())
             .filter(|i| !skip.contains(i))
             .choose_multiple(&mut rng, self.params.mines);
