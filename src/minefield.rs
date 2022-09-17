@@ -102,6 +102,10 @@ impl Tile {
     fn is_hint(&self) -> bool {
         matches!(self.object, Object::Hint(_))
     }
+
+    fn is_blank(&self) -> bool {
+        matches!(self.object, Object::Blank)
+    }
 }
 
 impl Board {
@@ -245,7 +249,7 @@ impl Board {
                     self.covered -= 1;
                 }
 
-                if !self.tiles[t_idx].is_hint() {
+                if self.tiles[t_idx].is_blank() {
                     for (xx, yy) in self.neighbors(current_x, current_y) {
                         if self.tiles[self.coords_to_index(xx, yy)].is_uncoverable() {
                             tile_pos.push_back((xx, yy));
