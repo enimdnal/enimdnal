@@ -234,11 +234,11 @@ impl Board {
         let mut visited = HashSet::new();
         tile_pos.push_back((x, y));
 
-        while let Some(tile) = tile_pos.pop_front() {
-            if !visited.insert(tile) {
+        while let Some((current_x, current_y)) = tile_pos.pop_front() {
+            if !visited.insert((current_x, current_y)) {
                 continue;
             }
-            let t_idx = self.coords_to_index(tile.0, tile.1);
+            let t_idx = self.coords_to_index(current_x, current_y);
             if self.tiles[t_idx].is_uncoverable() && !self.tiles[t_idx].is_mine() {
                 self.tiles[t_idx].cover = Cover::Down;
                 if self.covered > self.params.mines {
@@ -246,7 +246,7 @@ impl Board {
                 }
 
                 if !self.tiles[t_idx].is_hint() {
-                    for (xx, yy) in self.neighbors(tile.0, tile.1) {
+                    for (xx, yy) in self.neighbors(current_x, current_y) {
                         if self.tiles[self.coords_to_index(xx, yy)].is_uncoverable() {
                             tile_pos.push_back((xx, yy));
                         }
