@@ -210,18 +210,20 @@ impl Board {
             (1, 0),
             (1, 1),
         ];
+
         // copy these values to avoid borrowing `self` in the closure
         let width = self.params.width;
         let height = self.params.height;
-
         offsets.into_iter().filter_map(move |(off_x, off_y)| {
             let new_x = x as i32 + off_x;
             let new_y = y as i32 + off_y;
-            let new_x_inbounds = new_x >= 0 && new_x < width as i32;
-            let new_y_inbounds = new_y >= 0 && new_y < height as i32;
-            if !(new_x_inbounds && new_y_inbounds) {
+            let x_in_bounds = new_x >= 0 && new_x < width as i32;
+            let y_in_bounds = new_y >= 0 && new_y < height as i32;
+
+            if !x_in_bounds || !y_in_bounds {
                 return None;
             }
+
             Some((new_x as _, new_y as _))
         })
     }
