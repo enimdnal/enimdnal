@@ -1,3 +1,5 @@
+#![allow(clippy::main_recursion)]
+
 use notan::prelude::*;
 
 #[notan_main]
