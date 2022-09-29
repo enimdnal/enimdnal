@@ -1,5 +1,5 @@
-use notan::math::rand;
-use notan::math::rand::seq::IteratorRandom;
+use notan::random::rand;
+use notan::random::rand::seq::IteratorRandom;
 use std::collections::{HashSet, VecDeque};
 
 pub const BEGINNER: Params = Params {
