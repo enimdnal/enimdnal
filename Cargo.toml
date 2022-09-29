@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 
-notan = "0.6"
+notan = "0.7"
