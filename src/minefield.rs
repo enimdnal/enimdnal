@@ -236,28 +236,25 @@ impl Board {
     /// starting from a player-uncovered tile
     /// and stopping on already uncovered tiles and hint tiles.
     fn flood_uncover(&mut self, x: usize, y: usize) {
-        let mut tile_pos = VecDeque::new();
+        let mut tile_pos: Vec<_> = self.neighbors(x, y).collect();
         let mut visited = HashSet::new();
-        tile_pos.push_back((x, y));
 
-        while let Some((current_x, current_y)) = tile_pos.pop_front() {
-            if !visited.insert((current_x, current_y)) {
+        while let Some((current_x, current_y)) = tile_pos.pop() {
+            let t_idx = self.coords_to_index(current_x, current_y);
+            let tile = &mut self.tiles[t_idx];
+
+            if !tile.is_uncoverable() || !visited.insert((current_x, current_y)) {
                 continue;
             }
-            let t_idx = self.coords_to_index(current_x, current_y);
-            if self.tiles[t_idx].is_uncoverable() && !self.tiles[t_idx].is_mine() {
-                self.tiles[t_idx].cover = Cover::Down;
-                if self.covered > self.params.mines {
-                    self.covered -= 1;
-                }
 
-                if self.tiles[t_idx].is_blank() {
-                    for (xx, yy) in self.neighbors(current_x, current_y) {
-                        if self.tiles[self.coords_to_index(xx, yy)].is_uncoverable() {
-                            tile_pos.push_back((xx, yy));
-                        }
-                    }
-                }
+            tile.cover = Cover::Down;
+            if self.covered > self.params.mines {
+                self.covered -= 1;
+            }
+
+            if tile.is_blank() {
+                let n = self.neighbors(current_x, current_y);
+                tile_pos.extend(n);
             }
         }
     }
