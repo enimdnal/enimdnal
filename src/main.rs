@@ -1,5 +1,7 @@
 #![allow(clippy::main_recursion)]
 
+pub(crate) mod minefield;
+
 use notan::prelude::*;
 
 #[notan_main]
