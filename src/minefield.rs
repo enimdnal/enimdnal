@@ -236,10 +236,10 @@ impl Board {
     /// starting from a player-uncovered tile
     /// and stopping on already uncovered tiles and hint tiles.
     fn flood_uncover(&mut self, x: usize, y: usize) {
-        let mut tile_pos: Vec<_> = self.neighbors(x, y).collect();
+        let mut flooded: Vec<_> = self.neighbors(x, y).collect();
         let mut visited = HashSet::new();
 
-        while let Some((current_x, current_y)) = tile_pos.pop() {
+        while let Some((current_x, current_y)) = flooded.pop() {
             let t_idx = self.coords_to_index(current_x, current_y);
             let tile = &mut self.tiles[t_idx];
 
@@ -254,7 +254,7 @@ impl Board {
 
             if tile.is_blank() {
                 let n = self.neighbors(current_x, current_y);
-                tile_pos.extend(n);
+                flooded.extend(n);
             }
         }
     }
