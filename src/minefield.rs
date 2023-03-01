@@ -160,28 +160,24 @@ impl Board {
     /// Uncovering every non-mine tile is the win condition.
     /// Note that the mine tiles are **not** required to be flagged (looking at you, speedrunners).
     pub fn handle_uncover(&mut self, x: usize, y: usize) {
-        let tile_idx = self.coords_to_index(x, y);
-
         if !self.placed {
+            self.place_mines_and_hints(x, y);
             self.placed = true;
-            let mut skip = self
-                .neighbors(x, y)
-                .map(|(xx, yy)| self.coords_to_index(xx, yy))
-                .collect::<Vec<_>>();
-            skip.push(tile_idx);
-            self.place_mines(&skip);
-            self.place_hints();
         }
 
-        if !self.tiles[tile_idx].is_uncoverable() {
+        let tile_idx = self.coords_to_index(x, y);
+        let tile = &mut self.tiles[tile_idx];
+
+        if !tile.is_uncoverable() {
             return;
         }
 
-        self.tiles[tile_idx].cover = Cover::Down;
+        tile.cover = Cover::Down;
         if self.covered > self.params.mines {
             self.covered -= 1;
         }
-        match self.tiles[tile_idx].object {
+
+        match tile.object {
             Object::Mine => self.defeat = true,
             Object::Blank => self.flood_uncover(x, y),
             Object::Hint(_) => (),
@@ -262,6 +258,16 @@ impl Board {
     /// Get single dimension index of 2D tile in tiles array
     fn coords_to_index(&self, x: usize, y: usize) -> usize {
         y * self.params.width + x
+    }
+
+    fn place_mines_and_hints(&mut self, x: usize, y: usize) {
+        let skip: Vec<_> = self
+            .neighbors(x, y)
+            .chain([(x, y)])
+            .map(|(xx, yy)| self.coords_to_index(xx, yy))
+            .collect();
+        self.place_mines(&skip);
+        self.place_hints();
     }
 
     /// Place mines on the field.
