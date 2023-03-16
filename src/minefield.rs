@@ -61,6 +61,7 @@ pub struct Tile {
 pub struct Board {
     tiles: Vec<Tile>,
     covered: usize,
+    flags: usize,
     params: Params,
     placed: bool,
     defeat: bool,
@@ -115,6 +116,7 @@ impl Board {
         Self {
             tiles: vec![Tile::new(); size],
             covered: size,
+            flags: 0,
             placed: false,
             defeat: false,
             params,
@@ -137,9 +139,17 @@ impl Board {
         (self.params.width, self.params.height)
     }
 
+    pub fn mines(&self) -> usize {
+        self.params.mines
+    }
+
     pub fn tile(&self, x: usize, y: usize) -> Tile {
         let index = self.coords_to_index(x, y);
         self.tiles[index]
+    }
+
+    pub fn flags(&self) -> usize {
+        self.flags
     }
 
     pub fn is_victory(&self) -> bool {
@@ -148,6 +158,10 @@ impl Board {
 
     pub fn is_defeat(&self) -> bool {
         self.defeat
+    }
+
+    pub fn is_initialized(&self) -> bool {
+        self.placed
     }
 
     /// Primary interface for acting on a minefield.
@@ -193,7 +207,21 @@ impl Board {
         let tile_idx = self.coords_to_index(x, y);
         if let Cover::Up(mark) = &mut self.tiles[tile_idx].cover {
             mark.cycle();
+
+            match mark {
+                Mark::Flag => self.flags += 1,
+                Mark::Unsure => self.flags -= 1,
+                _ => (),
+            }
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.tiles.fill(Tile::new());
+        self.placed = false;
+        self.defeat = false;
+        self.covered = self.tiles.len();
+        self.flags = 0;
     }
 
     fn neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
