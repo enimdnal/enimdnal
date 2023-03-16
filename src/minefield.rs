@@ -1,6 +1,7 @@
+use std::collections::HashSet;
+
 use notan::random::rand;
 use notan::random::rand::seq::IteratorRandom;
-use std::collections::{HashSet, VecDeque};
 
 pub const BEGINNER: Params = Params {
     width: 8,
