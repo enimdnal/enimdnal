@@ -1,11 +1,14 @@
 use notan::draw::*;
 use notan::math::{Mat3, Vec2};
 use notan::prelude::*;
+use notan::random::rand;
 
 use crate::minefield::{Cover, Mark, Object, Params};
 use crate::state::{Stage, State};
 
 pub const TILE_SIZE: f32 = 40.;
+pub const HALF_TILE_SIZE: f32 = 40.;
+pub const STROKE: f32 = 3.;
 pub const UI_WIDTH: f32 = 300.;
 
 const OUTLINE_COLOR: Color = Color::from_rgb(0., 0.8, 0.7);
@@ -18,6 +21,104 @@ const HINT_COLOR: Color = Color::PINK;
 const COVER_COLOR: Color = Color::GRAY;
 const FLAG_COLOR: Color = Color::RED;
 const UNSURE_COLOR: Color = Color::BLUE;
+
+pub(crate) struct Particle {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    color: Color,
+    direction: f32,
+}
+
+pub struct Explosion {
+    start_time: f32,
+    particles: Vec<Particle>,
+}
+
+impl Explosion {
+    pub(crate) fn new(start_time: f32, square_size: f32, square_position: (f32, f32)) -> Self {
+        let mut rectangles: Vec<Particle> = Vec::new();
+        let p = Particle {
+            color: Color::RED,
+            x: square_position.0,
+            y: square_position.1,
+            width: square_size,
+            height: square_size,
+            direction: 1.,
+        };
+        rectangles.push(p);
+        Self {
+            start_time: start_time,
+            particles: rectangles,
+        }
+    }
+
+    pub(crate) fn pos(&self) -> (f32, f32) {
+        (
+            self.particles.first().unwrap().x,
+            self.particles.first().unwrap().y,
+        )
+    }
+
+    pub(crate) fn delay(&mut self, time: f32) {
+        self.start_time += time;
+    }
+}
+
+pub struct ConfettiExplosion {
+    start_time: f32,
+    particles: Vec<Particle>,
+}
+
+impl ConfettiExplosion {
+    pub(crate) fn new(
+        start_time: f32,
+        square_size: f32,
+        square_position: (f32, f32),
+        num_rectangles: i32,
+    ) -> Self {
+        let rectangles = break_rectangle(square_position, num_rectangles, square_size);
+        Self {
+            start_time: start_time + rand::random::<f32>() * 2000.,
+            particles: rectangles,
+        }
+    }
+}
+
+fn break_rectangle(
+    square_position: (f32, f32),
+    num_rectangles: i32,
+    square_size: f32,
+) -> Vec<Particle> {
+    let mut rectangles = Vec::new();
+
+    let square_x = square_position.0;
+    let square_y = square_position.1;
+
+    let squashing_ratio = (num_rectangles as f32).sqrt();
+    let rectangle_size = square_size / squashing_ratio;
+
+    for i in 0..squashing_ratio as i32 {
+        for j in 0..squashing_ratio as i32 {
+            let size_ratio = rand::random::<f32>();
+            let rectangle = Particle {
+                x: square_x + i as f32 * rectangle_size,
+                y: square_y + j as f32 * rectangle_size,
+                width: rectangle_size * size_ratio,
+                height: rectangle_size * size_ratio,
+                color: Color::from_rgb(
+                    rand::random::<f32>(),
+                    rand::random::<f32>(),
+                    rand::random::<f32>(),
+                ),
+                direction: rand::random::<f32>() * 2. - 1.,
+            };
+            rectangles.push(rectangle);
+        }
+    }
+    rectangles
+}
 
 pub fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = gfx.create_draw();
@@ -50,11 +151,18 @@ fn draw_board(draw: &mut Draw, state: &State) {
             draw_tile(draw, state, x, y);
         }
     }
+
+    state.explosions().iter().for_each(|e| {
+        draw_explosion_tile(draw, state.global_milisec(), e.start_time, &e.particles)
+    });
+
+    state.confetti_explosions().iter().for_each(|e| {
+        draw_confetti_explosion_tile(draw, state.global_milisec(), e.start_time, &e.particles)
+    });
 }
 
 fn draw_tile(draw: &mut Draw, state: &State, x: usize, y: usize) {
     const DIMS: (f32, f32) = (TILE_SIZE, TILE_SIZE);
-    const STROKE: f32 = 3.;
 
     let screen_x = x as f32 * TILE_SIZE;
     let screen_y = y as f32 * TILE_SIZE;
@@ -106,6 +214,80 @@ fn draw_tile(draw: &mut Draw, state: &State, x: usize, y: usize) {
             .h_align_center()
             .v_align_middle();
     }
+}
+
+fn draw_confetti_explosion_tile(
+    draw: &mut Draw,
+    curr_time: f32,
+    start_time: f32,
+    particles: &Vec<Particle>,
+) {
+    const ANIMATION_TIME: f32 = 1000.;
+
+    let time_diff = (curr_time - start_time) as f32;
+
+    let progress: f32 = time_diff / ANIMATION_TIME;
+    let velocity = 4. * HALF_TILE_SIZE;
+    let acceleration: f32 = -2. * velocity;
+    let time = progress as f32;
+    let vertical_displacement = velocity * time + 0.5 * acceleration * time.powf(2.);
+
+    particles.iter().for_each(|p| {
+        let direction = if p.direction >= 0. {
+            p.direction + 1.
+        } else {
+            p.direction - 1.
+        };
+        let explosion_pos = (
+            p.x + progress * HALF_TILE_SIZE * direction,
+            p.y - vertical_displacement * direction.abs(),
+        );
+        // let alpha = 1. - progress.powf(2.);
+        let alpha = 1.;
+        let angle = progress.log2() * p.direction;
+        draw.rect(explosion_pos, (p.width, p.height))
+            .color(p.color)
+            .alpha(alpha)
+            .rotate_from(
+                (
+                    explosion_pos.0 + p.width / 2.,
+                    explosion_pos.1 + p.height / 2.,
+                ),
+                angle,
+            );
+    });
+}
+
+fn draw_explosion_tile(
+    draw: &mut Draw,
+    curr_time: f32,
+    start_time: f32,
+    particles: &Vec<Particle>,
+) {
+    const ANIMATION_TIME: f32 = 500.;
+
+    let time_diff = (curr_time - start_time) as f32;
+    let progress: f32 = time_diff / ANIMATION_TIME;
+    if time_diff < 0. {
+        return;
+    }
+
+    particles.iter().for_each(|p| {
+        // let angle = progress.log2() * p.direction;
+        let ratio = gauss(progress, 0.5, 0., 1.);
+        let shift = HALF_TILE_SIZE * ratio;
+        let exploded_size = (p.width + shift, p.height + shift);
+        draw.rect((p.x - shift / 2., p.y - shift / 2.), exploded_size)
+            .color(p.color);
+        draw.rect((p.x - shift / 2., p.y - shift / 2.), exploded_size)
+            .color(OUTLINE_COLOR)
+            .stroke(STROKE);
+    });
+    // }
+}
+
+fn gauss(number: f32, a: f32, b: f32, c: f32) -> f32 {
+    a * (-1. * (number - b).powf(2.) / (2. * c * c)).exp()
 }
 
 fn hover_color(color: &mut Color) {

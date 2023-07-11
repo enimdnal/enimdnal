@@ -6,6 +6,8 @@ mod victory;
 use notan::draw::*;
 use notan::prelude::*;
 
+use crate::drawing::ConfettiExplosion;
+use crate::drawing::Explosion;
 use crate::drawing::TILE_SIZE;
 use crate::minefield::Board;
 
@@ -21,10 +23,15 @@ pub enum Stage {
 pub struct State {
     stage: Stage,
     board: Board,
+    last_coords: (usize, usize),
     hover: Option<(usize, usize)>,
     elapsed_milisec: u32,
+    global_milisec: f32,
     font: Font,
     font_mono: Font,
+    explosions: Vec<Explosion>,
+    confetti_explosions: Vec<ConfettiExplosion>,
+
 }
 
 impl State {
@@ -33,9 +40,13 @@ impl State {
             stage: Stage::Playing,
             board: Board::expert(),
             hover: None,
+            last_coords: (0, 0),
             elapsed_milisec: 0,
+            global_milisec: 0.,
             font,
             font_mono,
+            explosions:Vec::new(),
+            confetti_explosions: Vec::new(),
         }
     }
 
@@ -73,12 +84,23 @@ impl State {
         self.elapsed_milisec
     }
 
+    pub fn global_milisec(&self) -> f32 {
+        self.global_milisec
+    }
+
     pub fn font(&self) -> &Font {
         &self.font
     }
 
     pub fn font_mono(&self) -> &Font {
         &self.font_mono
+    }
+
+    pub fn explosions(&self) -> &Vec<Explosion> {
+        &self.explosions
+    }
+    pub fn confetti_explosions(&self) -> &Vec<ConfettiExplosion> {
+        &self.confetti_explosions
     }
 }
 
@@ -102,4 +124,5 @@ pub fn update(app: &mut App, state: &mut State) {
         Stage::Defeat => defeat::update(app, state),
         Stage::Victory => victory::update(app, state),
     }
+    state.global_milisec += app.timer.delta().subsec_millis() as f32;
 }
