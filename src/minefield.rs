@@ -92,19 +92,19 @@ impl Tile {
         self.object
     }
 
-    fn is_uncoverable(&self) -> bool {
+    pub fn is_uncoverable(&self) -> bool {
         matches!(self.cover, Cover::Up(mark) if mark != Mark::Flag)
     }
 
-    fn is_mine(&self) -> bool {
+    pub fn is_mine(&self) -> bool {
         matches!(self.object, Object::Mine)
     }
 
-    fn is_hint(&self) -> bool {
+    pub fn is_hint(&self) -> bool {
         matches!(self.object, Object::Hint(_))
     }
 
-    fn is_blank(&self) -> bool {
+    pub fn is_blank(&self) -> bool {
         matches!(self.object, Object::Blank)
     }
 }
