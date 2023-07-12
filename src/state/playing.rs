@@ -26,4 +26,8 @@ pub fn update(app: &mut App, state: &mut State) {
     } else if state.board.is_victory() {
         state.stage = Stage::Victory;
     }
+
+    if app.keyboard.was_pressed(KeyCode::Return) {
+        state.stage = Stage::Paused;
+    }
 }
