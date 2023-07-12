@@ -1,4 +1,5 @@
 mod defeat;
+mod paused;
 mod playing;
 mod victory;
 
@@ -11,6 +12,7 @@ use crate::minefield::Board;
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Stage {
     Playing,
+    Paused,
     Victory,
     Defeat,
 }
@@ -96,6 +98,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
 pub fn update(app: &mut App, state: &mut State) {
     match state.stage {
         Stage::Playing => playing::update(app, state),
+        Stage::Paused => paused::update(app, state),
         Stage::Defeat => defeat::update(app, state),
         Stage::Victory => victory::update(app, state),
     }

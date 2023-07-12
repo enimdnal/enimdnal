@@ -27,7 +27,11 @@ pub fn draw(gfx: &mut Graphics, state: &mut State) {
 
     draw_ui(&mut draw, state);
 
-    draw_board(&mut draw, state);
+    if state.stage() == Stage::Paused {
+        draw_paused(&mut draw, state);
+    } else {
+        draw_board(&mut draw, state);
+    }
 
     gfx.render(&draw);
 }
@@ -109,6 +113,21 @@ fn hover_color(color: &mut Color) {
     *r *= 0.8;
     *g *= 0.8;
     *b *= 0.8;
+}
+
+fn draw_paused(draw: &mut Draw, state: &State) {
+    let (cols, rows) = state.board().dims();
+    let size @ (width, height) = (cols as f32 * TILE_SIZE, rows as f32 * TILE_SIZE);
+
+    draw.rect((0., 0.), size).color(COVER_COLOR);
+    draw.rect((0., 0.), size).color(OUTLINE_COLOR).stroke(3.);
+
+    draw.text(state.font(), "PAUSED")
+        .color(Color::WHITE)
+        .size(40.)
+        .position(width / 2., height / 2.)
+        .h_align_center()
+        .v_align_middle();
 }
 
 fn draw_ui(draw: &mut Draw, state: &State) {
