@@ -1,4 +1,4 @@
-mod defeat;
+pub(crate) mod defeat;
 mod paused;
 mod playing;
 mod victory;
@@ -9,12 +9,14 @@ use notan::prelude::*;
 use crate::drawing::TILE_SIZE;
 use crate::minefield::Board;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+use defeat::DefeatState;
+
+#[derive(Debug)]
 pub enum Stage {
     Playing,
     Paused,
     Victory,
-    Defeat,
+    Defeat(DefeatState),
 }
 
 #[derive(AppState)]
@@ -57,8 +59,8 @@ impl State {
         Some((board_x, board_y))
     }
 
-    pub fn stage(&self) -> Stage {
-        self.stage
+    pub fn stage(&self) -> &Stage {
+        &self.stage
     }
 
     pub fn board(&self) -> &Board {
@@ -96,10 +98,13 @@ pub fn setup(gfx: &mut Graphics) -> State {
 }
 
 pub fn update(app: &mut App, state: &mut State) {
-    match state.stage {
+    match &mut state.stage {
         Stage::Playing => playing::update(app, state),
         Stage::Paused => paused::update(app, state),
-        Stage::Defeat => defeat::update(app, state),
+        Stage::Defeat(defeat_state) => {
+            defeat_state.update(app);
+            defeat::update(app, state);
+        }
         Stage::Victory => victory::update(app, state),
     }
 }
