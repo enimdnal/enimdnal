@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 
+itertools = "0.10"
 notan = "0.9"

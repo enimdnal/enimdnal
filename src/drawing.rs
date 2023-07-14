@@ -3,11 +3,15 @@ use notan::math::{Mat3, Vec2};
 use notan::prelude::*;
 
 use crate::minefield::{Cover, Mark, Object, Params};
+use crate::state::defeat::{DefeatState, Explosion};
 use crate::state::{Stage, State};
 
 pub const TILE_SIZE: f32 = 40.;
 pub const HALF_TILE_SIZE: f32 = TILE_SIZE / 2.;
 pub const UI_WIDTH: f32 = 300.;
+
+const DIMS: (f32, f32) = (TILE_SIZE, TILE_SIZE);
+const STROKE: f32 = 3.;
 
 const OUTLINE_COLOR: Color = Color::from_rgb(0., 0.8, 0.7);
 const WIN_COLOR: Color = Color::GREEN;
@@ -20,6 +24,10 @@ const COVER_COLOR: Color = Color::GRAY;
 const FLAG_COLOR: Color = Color::RED;
 const UNSURE_COLOR: Color = Color::BLUE;
 
+const EXPLOSION_COLOR: Color = Color::from_rgb(1., 0.502, 0.);
+const EXPLOSION_STROKE: f32 = STROKE * 2.;
+const EXPLOSION_STROKE_COLOR: Color = Color::BLACK;
+
 pub fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = gfx.create_draw();
 
@@ -27,10 +35,13 @@ pub fn draw(gfx: &mut Graphics, state: &mut State) {
 
     draw_ui(&mut draw, state);
 
-    if state.stage() == Stage::Paused {
-        draw_paused(&mut draw, state);
-    } else {
-        draw_board(&mut draw, state);
+    match state.stage() {
+        Stage::Paused => draw_paused(&mut draw, state),
+        _ => draw_board(&mut draw, state),
+    }
+
+    if let Stage::Defeat(defeat_state) = state.stage() {
+        draw_explosions(&mut draw, defeat_state);
     }
 
     gfx.render(&draw);
@@ -54,9 +65,6 @@ fn draw_board(draw: &mut Draw, state: &State) {
 }
 
 fn draw_tile(draw: &mut Draw, state: &State, x: usize, y: usize) {
-    const DIMS: (f32, f32) = (TILE_SIZE, TILE_SIZE);
-    const STROKE: f32 = 3.;
-
     let screen_x = x as f32 * TILE_SIZE;
     let screen_y = y as f32 * TILE_SIZE;
     let pos = (screen_x, screen_y);
@@ -75,7 +83,7 @@ fn draw_tile(draw: &mut Draw, state: &State, x: usize, y: usize) {
     };
 
     match state.stage() {
-        Stage::Defeat => {
+        Stage::Defeat(_) => {
             if let Object::Mine = object {
                 fill_color = MINE_COLOR;
             }
@@ -166,4 +174,38 @@ fn draw_ui(draw: &mut Draw, state: &State) {
         .v_align_middle();
 
     draw.transform().pop();
+}
+
+fn draw_explosions(draw: &mut Draw, defeat_state: &DefeatState) {
+    for explosion in &defeat_state.explosions {
+        draw_explosion(draw, explosion, defeat_state.elapsed_milisec);
+    }
+}
+
+fn draw_explosion(draw: &mut Draw, explosion: &Explosion, elapsed: u32) {
+    const ANIMATION_DURATION: f32 = 100.;
+
+    let Some(elapsed) = u32::checked_sub(elapsed, explosion.delay) else {
+        return;
+    };
+
+    let progress = elapsed as f32 / ANIMATION_DURATION;
+    let magnify = gauss(progress, 3., 0., 1.);
+    let shift = TILE_SIZE * magnify;
+
+    let (expl_x, expl_y) = explosion.pos;
+    let position = (
+        TILE_SIZE * expl_x as f32 - shift / 2.,
+        TILE_SIZE * expl_y as f32 - shift / 2.,
+    );
+    let size = (TILE_SIZE + shift, TILE_SIZE + shift);
+
+    draw.rect(position, size).color(EXPLOSION_COLOR);
+    draw.rect(position, size)
+        .color(EXPLOSION_STROKE_COLOR)
+        .stroke(EXPLOSION_STROKE);
+}
+
+fn gauss(x: f32, a: f32, b: f32, c: f32) -> f32 {
+    a * f32::exp(-0.5 * (x - b).powi(2) / (c * c))
 }
