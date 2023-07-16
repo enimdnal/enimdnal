@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
-use notan::random::rand;
-use notan::random::rand::seq::IteratorRandom;
+use crate::random::IteratorRandom;
 
 pub const BEGINNER: Params = Params {
     width: 8,
@@ -304,7 +303,7 @@ impl Board {
     /// The `skip` argument contains board indices
     /// that shall not have a mine placed in.
     fn place_mines(&mut self, skip: &[usize]) {
-        let mut rng = rand::thread_rng();
+        let mut rng = nanorand::WyRand::new();
         let mines = (0..self.tiles.len())
             .filter(|i| !skip.contains(i))
             .choose_multiple(&mut rng, self.params.mines);

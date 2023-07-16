@@ -2,6 +2,7 @@
 
 pub(crate) mod drawing;
 pub(crate) mod minefield;
+pub(crate) mod random;
 pub(crate) mod state;
 
 use notan::draw::*;
