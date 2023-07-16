@@ -15,8 +15,8 @@ fn main() -> Result<(), String> {
     let difficulty = minefield::EXPERT;
     let (width, height) = drawing::board_dims(difficulty);
     let win = WindowConfig::default()
-        .title("Enimdnal")
-        .size(width as i32 + UI_WIDTH as i32, height as _);
+        .set_title("Enimdnal")
+        .set_size(width as u32 + UI_WIDTH as u32, height as _);
     notan::init_with(state::setup)
         .update(state::update)
         .draw(drawing::draw)

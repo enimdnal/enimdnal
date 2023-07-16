@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 
-itertools = "0.10"
+itertools = "0.11"
 nanorand = "0.7"
-notan = { version = "0.9", default-features = false, features = ["backend", "log", "draw", "glsl-to-spirv"] }
+notan = { version = "0.10", default-features = false, features = ["backend", "log", "draw", "glsl-to-spirv"] }
