@@ -1,5 +1,7 @@
 # enimdnal
 
+![Quick Enimdnal demo](assets/demo.gif)
+
 ## About
 
 Tired of too many minesweeper clones? Us neither!
