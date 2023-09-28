@@ -204,14 +204,15 @@ impl Board {
     /// available covered-field marks (the [Mark] type).
     pub fn handle_mark(&mut self, x: usize, y: usize) {
         let tile_idx = self.coords_to_index(x, y);
-        if let Cover::Up(mark) = &mut self.tiles[tile_idx].cover {
-            mark.cycle();
+        let Cover::Up(mark) = &mut self.tiles[tile_idx].cover else {
+            return;
+        };
 
-            match mark {
-                Mark::Flag => self.flags += 1,
-                Mark::Unsure => self.flags -= 1,
-                _ => (),
-            }
+        mark.cycle();
+        match mark {
+            Mark::Flag => self.flags += 1,
+            Mark::Unsure => self.flags -= 1,
+            _ => (),
         }
     }
 
