@@ -107,6 +107,10 @@ impl Tile {
     pub fn is_blank(&self) -> bool {
         matches!(self.object, Object::Blank)
     }
+
+    pub fn is_flag(&self) -> bool {
+        matches!(self.cover, Cover::Up(Mark::Flag))
+    }
 }
 
 impl Board {
@@ -181,6 +185,11 @@ impl Board {
 
         let tile_idx = self.coords_to_index(x, y);
         let tile = &mut self.tiles[tile_idx];
+
+        if let (Cover::Down, Object::Hint(hint)) = (tile.cover, tile.object) {
+            self.explore_around(hint, x, y);
+            return;
+        }
 
         if !tile.is_uncoverable() {
             return;
@@ -281,6 +290,32 @@ impl Board {
                 let n = self.neighbors(current_x, current_y);
                 flooded.extend(n);
             }
+        }
+    }
+
+    /// Clicking on a hint tile if there are exactly as many flags around it as hinted
+    /// causes the remaining covered tiles to be uncovered automatically.
+    ///
+    /// Beware: if the flags are misplaced, this is an instant defeat!
+    fn explore_around(&mut self, hinted: u8, x: usize, y: usize) {
+        let neighbors: Vec<_> = self.neighbors(x, y).collect();
+        let n_flags = neighbors
+            .iter()
+            .filter(|&&(xx, yy)| self.tiles[self.coords_to_index(xx, yy)].is_flag())
+            .count();
+
+        if hinted as usize != n_flags {
+            return;
+        }
+
+        let explored: Vec<_> = neighbors
+            .iter()
+            .copied()
+            .filter(|&(xx, yy)| self.tiles[self.coords_to_index(xx, yy)].is_uncoverable())
+            .collect();
+
+        for (current_x, current_y) in explored {
+            self.handle_uncover(current_x, current_y);
         }
     }
 
