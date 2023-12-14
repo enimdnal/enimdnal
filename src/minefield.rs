@@ -169,15 +169,14 @@ impl Board {
 
     /// Primary interface for acting on a minefield.
     ///
-    /// Corresponds to the action of uncovering a covered tile and either:
+    /// Corresponds to one of the primary actions on a tile:
     ///
-    /// - uncovering a hint
-    /// - uncovering a blank, which triggers a flood-uncover
-    /// - uncovering a mine, resulting in a game-over
+    /// - uncovering a covered tile
+    /// - doing an "explore" action around a hint tile
     ///
     /// Uncovering every non-mine tile is the win condition.
     /// Note that the mine tiles are **not** required to be flagged (looking at you, speedrunners).
-    pub fn handle_uncover(&mut self, x: usize, y: usize) {
+    pub fn handle_primary_action(&mut self, x: usize, y: usize) {
         if !self.placed {
             self.place_mines_and_hints(x, y);
             self.placed = true;
@@ -195,23 +194,14 @@ impl Board {
             return;
         }
 
-        tile.cover = Cover::Down;
-        if self.covered > self.params.mines {
-            self.covered -= 1;
-        }
-
-        match tile.object {
-            Object::Mine => self.defeat = true,
-            Object::Blank => self.flood_uncover(x, y),
-            Object::Hint(_) => (),
-        }
+        self.uncover(x, y);
     }
 
     /// Primary interface for acting on a minefield.
     ///
     /// Corresponds to the action of cycling through
-    /// available covered-field marks (the [Mark] type).
-    pub fn handle_mark(&mut self, x: usize, y: usize) {
+    /// available covered-tile marks (the [Mark] type).
+    pub fn handle_secondary_action(&mut self, x: usize, y: usize) {
         let tile_idx = self.coords_to_index(x, y);
         let Cover::Up(mark) = &mut self.tiles[tile_idx].cover else {
             return;
@@ -282,14 +272,26 @@ impl Board {
             }
 
             tile.cover = Cover::Down;
-            if self.covered > self.params.mines {
-                self.covered -= 1;
-            }
+            self.covered -= 1;
 
             if tile.is_blank() {
                 let n = self.neighbors(current_x, current_y);
                 flooded.extend(n);
             }
+        }
+    }
+
+    fn uncover(&mut self, x: usize, y: usize) {
+        let tile_idx = self.coords_to_index(x, y);
+        let tile = &mut self.tiles[tile_idx];
+
+        tile.cover = Cover::Down;
+        self.covered -= 1;
+
+        match tile.object {
+            Object::Mine => self.defeat = true,
+            Object::Blank => self.flood_uncover(x, y),
+            Object::Hint(_) => (),
         }
     }
 
@@ -315,7 +317,7 @@ impl Board {
             .collect();
 
         for (current_x, current_y) in explored {
-            self.handle_uncover(current_x, current_y);
+            self.uncover(current_x, current_y);
         }
     }
 
